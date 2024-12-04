@@ -3,14 +3,16 @@ import 'dart:convert';
 
 class FCMService {
   /// Sends the FCM token to the backend.
-  Future<void> sendTokenToBackend(String? token, String? userId, String authToken) async {
-    if (token == null || userId == null || authToken.isEmpty) {
+  Future<void> sendTokenToBackend(String? token, String authToken) async {
+    if (token == null || authToken.isEmpty) {
       print("Invalid inputs: token, userId, or authToken is null/empty.");
+      print('Token: $token');
+      print('UserId: $authToken');
       return;
     }
 
     // Backend API endpoint
-    final url = Uri.parse("http://localhost:8080/api/save-fcm-token"); // Replace with your backend endpoint
+    final url = Uri.parse("http://192.168.232.3:8080/save-fcm-token"); // Replace with your backend endpoint
 
     try {
       // HTTP POST request to send the token
@@ -22,7 +24,7 @@ class FCMService {
         },
         body: jsonEncode({
           'token': token,
-          'userId': userId, // Associate the token with the logged-in user
+          //'userId': userId, // Associate the token with the logged-in user
         }),
       );
 

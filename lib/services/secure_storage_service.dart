@@ -25,10 +25,13 @@ class SecureStorageService {
   Future<User?> getUser() async {
     final userJson = await _storage.read(key: 'user_info');
     if (userJson != null) {
-      return User.fromMap(jsonDecode(userJson));
+      final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+      final id = userMap['id'] as String?; // Ensure the document ID is stored
+      return User.fromMap(userMap, id ?? '');
     }
     return null;
   }
+
 
   Future<void> deleteUser() async {
     await _storage.delete(key: 'user_info');

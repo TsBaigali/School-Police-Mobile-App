@@ -17,13 +17,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _onCheck(Check event, Emitter<LoginState> emit) async {
     emit(LoginLoading());
 
-    final token =
-        await authService.authenticateUser(event.username, event.password);
+    try {
+      final userId =
+      await authService.loginWithEmailAndPassword(event.username, event.password);
 
-    if (token != null) {
-      emit(LoginSuccess(token: token));
-    } else {
-      emit(LoginFailure(message: 'Нэвтрэх нэр эсвэл нууц үг буруу байна'));
+      if (userId != null) {
+        emit(LoginSuccess(token: userId));
+      } else {
+        emit(LoginFailure(message: 'Нэвтрэх нэр эсвэл нууц үг буруу байна'));
+      }
+    } catch (error) {
+      emit(LoginFailure(message: 'Алдаа гарлаа: ${error.toString()}'));
     }
   }
 

@@ -10,50 +10,21 @@ import '../../models/ad.dart';
 import '../home_screen/home_state.dart';
 import '../school_police_home_screen/school_police_home_screen.dart';
 
-
-List<Ad> exampleAds = [
-  Ad(
-    id: '1',
-    userName: 'John Doe',
-    profilePic:
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSxSycPmZ67xN1lxHxyMYOUPxZObOxnkLf6w&s',
-    address: '5-р сургууль',
-    price: '50000',
-    date: '2024-10-10',
-    shift: '07:30-12:30',
-    additionalInfo: '''
-    This job requires a highly skilled and experienced individual who is passionate about working with students. The successful candidate will be responsible for ensuring safe and timely transportation of students to and from school, managing communications with parents, and coordinating schedules with school authorities.
-  ''',
-  ),
-  Ad(
-    id: '2',
-    userName: 'Jane Smith',
-    profilePic:
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvjId5ED74jYnBlek4hJ1jR5tOSeZ0V2KuXQ&s',
-    address: '456 Oak Avenue, Town',
-    price: '\$60/hour',
-    date: '2024-10-12',
-    shift: 'Evening Shift',
-    additionalInfo: 'Seeking a weekend gig.',
-  ),
-  // Add more example ads here if needed
-];
-
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: BlocProvider(
-        create: (_) => HomeBloc()..add(LoadAds()),
+    return BlocProvider(
+      create: (_) => HomeBloc()..add(LoadAds()), // Fetch ads on initialization
+      child: DefaultTabController(
+        length: 2,
         child: Scaffold(
           appBar: AppBar(
-            backgroundColor: Color(0xFFF6F6F6),
+            backgroundColor: const Color(0xFFF6F6F6),
             elevation: 0,
             title: Row(
               children: [
                 IconButton(
-                  icon: CircleAvatar(
+                  icon: const CircleAvatar(
                     backgroundImage: NetworkImage(
                       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSxSycPmZ67xN1lxHxyMYOUPxZObOxnkLf6w&s',
                     ),
@@ -69,7 +40,7 @@ class HomeScreen extends StatelessWidget {
                   child: _buildSearchSection(context),
                 ),
                 IconButton(
-                  icon: Icon(Icons.notifications, color: Colors.black),
+                  icon: const Icon(Icons.notifications, color: Colors.black),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -84,11 +55,12 @@ class HomeScreen extends StatelessWidget {
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(50),
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                        color: Colors.grey,
-                        width: 1), // Grey border for inactive tabs
+                      color: Colors.grey,
+                      width: 1,
+                    ), // Grey border for inactive tabs
                   ),
                 ),
                 child: TabBar(
@@ -97,7 +69,6 @@ class HomeScreen extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                       width: 2.0,
                     ),
-                    insets: EdgeInsets.zero,
                   ),
                   labelColor: Theme.of(context).colorScheme.primary,
                   unselectedLabelColor: Colors.grey,
@@ -112,97 +83,54 @@ class HomeScreen extends StatelessWidget {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: TabBarView(
             children: [
-              // "Эцэг эх" Tab - Shows ads
-              Stack(
-                children: [
-                  Column(
-                    children: [
-                      _buildTopSection(context),
-                      Expanded(
-                        child: BlocBuilder<HomeBloc, HomeState>(
-                          builder: (context, state) {
-                            if (state is HomeLoading) {
-                              return Center(child: CircularProgressIndicator());
-                            } else if (state is HomeLoaded) {
-                              final adsToShow =
-                              state.ads.isEmpty ? exampleAds : state.ads;
-                              return _buildAdList(context, adsToShow);
-                            } else if (state is HomeError) {
-                              return _buildAdList(context, exampleAds);
-                            } else {
-                              return _buildAdList(context, exampleAds);
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              // "School Police" Tab - Displaying SchoolPoliceScreen
-              SchoolPoliceHomeScreen(parentSchool: '5-р сургууль',),
+              _buildAdsTab(context),
+              SchoolPoliceHomeScreen(parentSchool: '5-р сургууль'),
             ],
           ),
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    spreadRadius: 3,
-                    blurRadius: 8,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                radius: 30,
-                child: IconButton(
-                  icon: Icon(Icons.add, color: Colors.white),
-                  onPressed: () {
-                    _showAddPostBottomSheet(context);
-                  },
-                ),
-              ),
-            ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              _showAddPostBottomSheet(context);
+            },
+            child: const Icon(Icons.add),
           ),
-          floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         ),
       ),
     );
   }
 
-  // Function to show the bottom sheet for adding a post
-  void _showAddPostBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => FractionallySizedBox(
-        heightFactor: 0.9,
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
+  Widget _buildAdsTab(BuildContext context) {
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        if (state is HomeLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is HomeLoaded) {
+          // Wrap the ad list in a RefreshIndicator
+          return RefreshIndicator(
+            onRefresh: () async {
+              // Trigger the LoadAds event to reload data
+              context.read<HomeBloc>().add(LoadAds());
+              // Wait for a short duration to show the refresh spinner
+              await Future.delayed(const Duration(seconds: 1));
+            },
+            child: _buildAdList(context, state.ads),
+          );
+        } else if (state is HomeError) {
+          return Center(
+            child: Text(
+              'Failed to load ads. Please try again.',
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
-            Expanded(
-              child: AddPostScreen(),
+          );
+        } else {
+          return Center(
+            child: Text(
+              'No ads available.',
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 
@@ -218,7 +146,7 @@ class HomeScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(30.0),
             borderSide: BorderSide.none,
           ),
-          prefixIcon: Icon(Icons.search, color: Colors.black),
+          prefixIcon: const Icon(Icons.search, color: Colors.black),
         ),
         onChanged: (query) {
           context.read<HomeBloc>().add(SearchAds(query));
@@ -227,40 +155,25 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopSection(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 150,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildAdBanner(
-                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvjId5ED74jYnBlek4hJ1jR5tOSeZ0V2KuXQ&s'),
-              _buildAdBanner(
-                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvjId5ED74jYnBlek4hJ1jR5tOSeZ0V2KuXQ&s'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAdBanner(String imageUrl) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Image.network(imageUrl),
-    );
-  }
-
   Widget _buildAdList(BuildContext context, List<Ad> ads) {
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(), // Allow pull-to-refresh even when the list is empty
       itemCount: ads.length,
       itemBuilder: (context, index) {
         final ad = ads[index];
         return AdCard(ad: ad);
       },
+    );
+  }
+
+  void _showAddPostBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => AddPostScreen(),
     );
   }
 }

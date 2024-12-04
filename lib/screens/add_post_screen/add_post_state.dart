@@ -1,4 +1,4 @@
-// add_post_state.dart
+import '../../models/ad.dart';
 
 abstract class AddPostState {
   final String? selectedDistrict;
@@ -14,9 +14,14 @@ class AddPostInitial extends AddPostState {
 
 class AddPostLoading extends AddPostState {}
 
-class AddPostSuccess extends AddPostState {}
+class AddPostSuccess extends AddPostState {
+  final Ad ad;
+
+  AddPostSuccess(this.ad);
+}
 
 class AddPostFailure extends AddPostState {
   final String error;
+
   AddPostFailure({required this.error});
 }

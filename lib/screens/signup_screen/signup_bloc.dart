@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'signup_event.dart';
 import 'signup_state.dart';
 
 class SignupBloc extends Bloc<SignupEvent, SignupState> {
-  final String baseUrl =
-      'https://backend-api-491759785783.asia-northeast1.run.app/';
+  final firebase_auth.FirebaseAuth _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   SignupBloc() : super(const SignupState()) {
     on<SignupUsernameChanged>(_onUsernameChanged);
@@ -84,38 +84,37 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       return;
     }
 
-    // Send data to backend
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/register'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'name': state.username,
-          'email': state.email,
-          'password': state.password,
-          'address': 'Default address', // Default value
-          'phoneNumber': '0000000000', // Default value
-          'rating': 0, // Default value
-          'totalWorkCount': 0, // Default value
-          'userid': 123 // Default value
-        }),
+      // Create user with Firebase Authentication
+      final firebase_auth.UserCredential userCredential =
+      await _firebaseAuth.createUserWithEmailAndPassword(
+        email: state.email,
+        password: state.password,
       );
 
-      if (response.statusCode == 200) {
+      final userId = userCredential.user?.uid;
+
+      if (userId != null) {
+        // Save additional user details to Firestore
+        await _firestore.collection('user').doc(userId).set({
+          'username': state.username,
+          'email': state.email,
+          'createdAt': DateTime.now().toIso8601String(),
+          'fcmToken': await firebase_auth.FirebaseAuth.instance.currentUser
+              ?.getIdToken(), // Optional FCM Token
+        });
+
         emit(state.copyWith(
           isSubmitting: false,
           isSuccess: true,
           isFailure: false,
         ));
       } else {
-        final errorResponse = json.decode(response.body);
         emit(state.copyWith(
           isSubmitting: false,
           isSuccess: false,
           isFailure: true,
-          errorMessage: errorResponse['message'] ?? 'Registration failed',
+          errorMessage: 'User creation failed',
         ));
       }
     } catch (e) {
@@ -123,7 +122,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         isSubmitting: false,
         isSuccess: false,
         isFailure: true,
-        errorMessage: 'Failed to connect to the server',
+        errorMessage: 'Error: ${e.toString()}',
       ));
     }
   }

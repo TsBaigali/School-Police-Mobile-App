@@ -1,72 +1,121 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:school_police/models/user_model.dart';
+import 'package:school_police/models/user_model.dart'; // Your custom User model
 import 'package:school_police/services/secure_storage_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:school_police/services/fcm_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
   final SecureStorageService _secureStorage = SecureStorageService();
   final FCMService _fcmService = FCMService();
+  final firebase_auth.FirebaseAuth _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final String baseUrl =
-      'https://backend-api-491759785783.asia-northeast1.run.app/';
-
-  /// Authenticate user and send FCM token to backend.
-  Future<String?> authenticateUser(
-      String usernameOrEmail, String password) async {
+  Future<String?> signUpWithEmailAndPassword(String email, String password, String username) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'usernameOrEmail': usernameOrEmail,
-          'password': password,
-        }),
+      // Create user in Firebase Authentication
+      final firebase_auth.UserCredential userCredential =
+      await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
+      // Add user details to Firestore
+      final userId = userCredential.user?.uid;
+      if (userId != null) {
+        await _firestore.collection('user').doc(userId).set({
+          'email': email,
+          'username': username,
+          'createdAt': DateTime.now().toIso8601String(),
+        });
 
-        // Assuming the API returns a `token` and `userId` object
-        final token = responseBody['token'];
-        final userId = responseBody['userId']; // Ensure this key matches your API response
-
-        // Save token and user in secure storage
-        await _secureStorage.saveToken(token);
-
-        // Retrieve the FCM token
+        // Store FCM token
         final fcmToken = await FirebaseMessaging.instance.getToken();
-
-        // Send the FCM token to the backend
         if (fcmToken != null) {
-          await _fcmService.sendTokenToBackend(fcmToken, userId, token);
-        } else {
-          print("FCM token is null.");
+          await _firestore.collection('user').doc(userId).update({
+            'fcmToken': fcmToken,
+          });
         }
 
-        return token;
-      } else {
-        print("Authentication failed: ${response.statusCode} ${response.body}");
-        return null;
+        return userId; // Return Firebase `uid`
       }
+      return null;
     } catch (e) {
-      print('Error during authentication: $e');
+      print("Error during sign-up: $e");
       return null;
     }
   }
 
-  Future<bool> isLoggedIn() async {
-    final token = await _secureStorage.getToken();
-    return token != null;
-  }
+  Future<String?> loginWithEmailAndPassword(String email, String password) async {
+    try {
+      // Authenticate user in Firebase Authentication
+      final firebase_auth.UserCredential userCredential =
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-  Future<User?> getUser() async {
-    return await _secureStorage.getUser();
+      final userId = userCredential.user?.uid;
+      if (userId != null) {
+        // Retrieve the user document from Firestore
+        final userDocSnapshot = await _firestore.collection('user').doc(userId).get();
+
+        if (userDocSnapshot.exists) {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            // Update FCM token in Firestore
+            await _firestore.collection('user').doc(userId).update({
+              'fcmToken': fcmToken,
+            });
+
+            // Optionally, send the token to your backend
+            final backendToken = await _secureStorage.getToken(); // Replace with actual backend token if needed
+            if (backendToken != null) {
+              await _fcmService.sendTokenToBackend(fcmToken, backendToken);
+            }
+          }
+
+          return userId; // Return Firebase `uid`
+        } else {
+          print("User document not found in Firestore.");
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Error during login: $e");
+      return null;
+    }
   }
 
   Future<void> logout() async {
-    await _secureStorage.deleteToken();
-    await _secureStorage.deleteUser();
+    try {
+      // Sign out from Firebase Authentication
+      await _firebaseAuth.signOut();
+
+      // Clear local storage
+      await _secureStorage.deleteToken();
+      await _secureStorage.deleteUser();
+    } catch (e) {
+      print("Error during logout: $e");
+    }
+  }
+
+  Future<bool> isLoggedIn() async {
+    final user = _firebaseAuth.currentUser;
+    return user != null;
+  }
+
+  Future<User?> getUser() async {
+    final firebase_auth.User? firebaseUser = _firebaseAuth.currentUser;
+    if (firebaseUser != null) {
+      final userDocSnapshot = await _firestore.collection('user').doc(firebaseUser.uid).get();
+      if (userDocSnapshot.exists) {
+        return User.fromMap(userDocSnapshot.data()!, firebaseUser.uid); // Update `User` model as needed
+      }
+    }
+    return null;
   }
 }

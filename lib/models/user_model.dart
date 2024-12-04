@@ -3,6 +3,7 @@ import 'dart:io';
 enum UserRole { parent, schoolPolice }
 
 class User {
+  final String? id; // Firestore document ID
   final String username;
   final String firstName;
   final String lastName;
@@ -11,9 +12,10 @@ class User {
   final String password;
   final File? image;
   final UserRole role;
-  final List<String>? assignedSchools; // Only for schoolPolice
+  final List<String>? assignedSchools;
 
   User({
+    this.id, // Firestore document ID
     required this.username,
     required this.firstName,
     required this.lastName,
@@ -22,32 +24,8 @@ class User {
     required this.password,
     this.image,
     required this.role,
-    required this.assignedSchools, // This will be null for `parent`
+    required this.assignedSchools,
   });
-
-  User copyWith({
-    String? username,
-    String? firstName,
-    String? lastName,
-    String? email,
-    int? phoneNumber,
-    String? password,
-    File? image,
-    UserRole? role,
-    List<String>? assignedSchools,
-  }) {
-    return User(
-      username: username ?? this.username,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      password: password ?? this.password,
-      image: image ?? this.image,
-      role: role ?? this.role,
-      assignedSchools: assignedSchools ?? this.assignedSchools,
-    );
-  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -59,12 +37,13 @@ class User {
       'password': password,
       'image': image?.path,
       'role': role.toString().split('.').last,
-      'assignedSchools': assignedSchools, // List of assigned schools
+      'assignedSchools': assignedSchools,
     };
   }
 
-  factory User.fromMap(Map<String, dynamic> map) {
+  factory User.fromMap(Map<String, dynamic> map, String id) {
     return User(
+      id: id, // Firestore document ID
       username: map['username'],
       firstName: map['firstName'],
       lastName: map['lastName'],
@@ -72,11 +51,12 @@ class User {
       phoneNumber: map['phoneNumber'],
       password: map['password'],
       image: map['image'] != null ? File(map['image']) : null,
-      role: UserRole.values.firstWhere(
-              (e) => e.toString() == 'UserRole.${map['role']}'),
+      role: UserRole.values
+          .firstWhere((e) => e.toString() == 'UserRole.${map['role']}'),
       assignedSchools: map['assignedSchools'] != null
           ? List<String>.from(map['assignedSchools'])
           : null,
     );
   }
 }
+

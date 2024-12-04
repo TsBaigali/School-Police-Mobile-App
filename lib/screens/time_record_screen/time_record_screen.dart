@@ -25,7 +25,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
   String _totalWorkedTimeText = "00:00";
   late DateTime _arrivalTime;
   late DateTime _departureTime;
-  LatLng _adLocation = LatLng(47.916646, 106.912154);
+  LatLng _adLocation = LatLng(47.90466852584394, 106.93507607116426);
   LatLng? _userLocation;
 
   @override

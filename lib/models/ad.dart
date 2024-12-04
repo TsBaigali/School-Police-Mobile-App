@@ -1,56 +1,65 @@
 class Ad {
   final String id;
-  final String userName;
+  final String school;
   final String profilePic;
-  final String address;
-  final String price;
-  final String date;
-  final String shift;
+  final String district;
   final String additionalInfo;
+  final String shift;
+  final String date;
+  final String phoneNumber; // Add if required
   final int views;
-  final int requestCount; // New field for request count
+  final int requestCount;
+  final int price;
+  final String ownerId; // New field added
 
   Ad({
     required this.id,
-    required this.userName,
+    required this.school,
     required this.profilePic,
-    required this.address,
-    required this.price,
-    required this.date,
-    required this.shift,
+    required this.district,
     required this.additionalInfo,
-    this.views = 0,
-    this.requestCount = 0, // Default value of 0
+    required this.shift,
+    required this.date,
+    required this.phoneNumber,
+    required this.views,
+    required this.requestCount,
+    required this.price,
+    required this.ownerId, // Include in the constructor
   });
 
-  // toMap and fromMap should be updated to include requestCount
+  // Factory method for converting Firestore data to an Ad object
+  factory Ad.fromMap(Map<String, dynamic> map, String id) {
+    return Ad(
+      id: id,
+      school: map['school'] ?? '',
+      profilePic: map['profilePic'] ?? '',
+      district: map['address'] ?? '',
+      additionalInfo: map['additionalInfo'] ?? '',
+      shift: map['shift'] ?? '',
+      date: map['date'] ?? '',
+      phoneNumber: map['phoneNumber'] ?? '',
+      views: map['views'] ?? 0,
+      requestCount: map['requestCount'] ?? 0,
+      price: map['price'] ?? 0,
+      ownerId: map['ownerId'] ?? '', // Fetch ownerId from the map
+    );
+  }
+
+  // Converts an Ad object to a map for Firestore or debugging
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'userName': userName,
+      'school': school,
       'profilePic': profilePic,
-      'address': address,
-      'price': price,
-      'date': date,
-      'shift': shift,
+      'address': district,
       'additionalInfo': additionalInfo,
+      'shift': shift,
+      'date': date,
+      'phoneNumber': phoneNumber,
       'views': views,
-      'requestCount': requestCount, // Include requestCount in map
+      'requestCount': requestCount,
+      'price': price,
+      'ownerId': ownerId, // Include ownerId in the map
     };
-  }
-
-  factory Ad.fromMap(Map<String, dynamic> map) {
-    return Ad(
-      id: map['id'],
-      userName: map['userName'],
-      profilePic: map['profilePic'],
-      address: map['address'],
-      price: map['price'],
-      date: map['date'],
-      shift: map['shift'],
-      additionalInfo: map['additionalInfo'],
-      views: map['views'] ?? 0,
-      requestCount: map['requestCount'] ?? 0, // Default to 0 if missing
-    );
   }
 }
