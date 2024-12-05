@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/ad.dart';
-import '../../services/aa.dart';
+import '../../services/notification_service.dart';
 import '../ad_description_screen/ad_description_bloc.dart';
 import '../ad_description_screen/ad_description_event.dart';
 import '../ad_description_screen/ad_description_state.dart';
@@ -53,6 +53,7 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
       print('Error fetching owner name: $e');
     }
   }
+
   Future<void> _sendNotificationToAdOwner() async {
     try {
       final notificationService = NotificationService();
@@ -99,7 +100,8 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                       ),
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundImage: NetworkImage('https://media.gettyimages.com/id/1437816897/photo/business-woman-manager-or-human-resources-portrait-for-career-success-company-we-are-hiring.jpg?s=612x612&w=gi&k=20&c=LsB3LmCoN69U82LEYU78IC2tNwOMjy7LJlmEj30UOSs='),
+                        backgroundImage: NetworkImage(
+                            'https://media.gettyimages.com/id/1437816897/photo/business-woman-manager-or-human-resources-portrait-for-career-success-company-we-are-hiring.jpg?s=612x612&w=gi&k=20&c=LsB3LmCoN69U82LEYU78IC2tNwOMjy7LJlmEj30UOSs='),
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -139,7 +141,7 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
-                                      Text('Request sent successfully!')),
+                                          Text('Request sent successfully!')),
                                 );
                               } else if (state is JobRequestError) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -182,29 +184,44 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                   ),
                                   const SizedBox(height: 20),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
                                     children: [
                                       Expanded(
-                                        flex: 1, // Adjust flex for relative sizing
+                                        flex:
+                                            1, // Adjust flex for relative sizing
                                         child: _buildInfoCard(
                                           'Үнэ / Хөлс',
                                           '${widget.ad.price}₮',
                                           icon: Icons.attach_money,
-                                          iconColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                          iconBackground: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                          isLarge: true, // Pass flag for large styling
+                                          iconColor: Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                          iconBackground: Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                          isLarge:
+                                              true, // Pass flag for large styling
                                         ),
                                       ),
-                                      const SizedBox(width: 10), // Add spacing between cards
+                                      const SizedBox(
+                                          width:
+                                              10), // Add spacing between cards
                                       Expanded(
-                                        flex: 1, // Adjust flex for relative sizing
+                                        flex:
+                                            1, // Adjust flex for relative sizing
                                         child: _buildInfoCard(
                                           'Хугацаа',
                                           widget.ad.shift,
                                           icon: Icons.access_time,
-                                          iconColor: Theme.of(context).colorScheme.tertiary,
-                                          iconBackground: Theme.of(context).colorScheme.tertiary,
-                                          isLarge: true, // Pass flag for large styling
+                                          iconColor: Theme.of(context)
+                                              .colorScheme
+                                              .tertiary,
+                                          iconBackground: Theme.of(context)
+                                              .colorScheme
+                                              .tertiary,
+                                          isLarge:
+                                              true, // Pass flag for large styling
                                         ),
                                       ),
                                     ],
@@ -226,8 +243,8 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                     isExpanded
                                         ? widget.ad.additionalInfo
                                         : widget.ad.additionalInfo.length > 100
-                                        ? '${widget.ad.additionalInfo.substring(0, 100)}...'
-                                        : widget.ad.additionalInfo,
+                                            ? '${widget.ad.additionalInfo.substring(0, 100)}...'
+                                            : widget.ad.additionalInfo,
                                     style: const TextStyle(
                                       color: Colors.black87,
                                       fontSize: 16,
@@ -242,9 +259,7 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                     child: Padding(
                                       padding: const EdgeInsets.only(top: 8),
                                       child: Text(
-                                        isExpanded
-                                            ? 'See Less'
-                                            : 'See More',
+                                        isExpanded ? 'See Less' : 'See More',
                                         style: TextStyle(
                                           color: Theme.of(context)
                                               .colorScheme
@@ -267,7 +282,7 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                   const SizedBox(height: 25),
                                   Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Column(
                                         children: [
@@ -302,7 +317,7 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                       const SizedBox(width: 5),
                                       Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.end,
+                                            CrossAxisAlignment.end,
                                         children: [
                                           _buildActionButton(
                                             context,
@@ -315,9 +330,9 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
                                               context
                                                   .read<AdDescriptionBloc>()
                                                   .add(
-                                                SubmitJobRequest(
-                                                    widget.ad.id),
-                                              );
+                                                    SubmitJobRequest(
+                                                        widget.ad.id),
+                                                  );
                                             },
                                           ),
                                           const SizedBox(height: 10),
@@ -364,11 +379,14 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
     );
   }
 
-  Widget _buildInfoCard(String label, String value,
-      {required IconData icon,
-        required Color iconColor,
-        required Color iconBackground,
-        bool isLarge = false,}) {
+  Widget _buildInfoCard(
+    String label,
+    String value, {
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBackground,
+    bool isLarge = false,
+  }) {
     return Container(
       padding: EdgeInsets.all(isLarge ? 20 : 12),
       decoration: BoxDecoration(
@@ -415,24 +433,25 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(text,
-          style: const TextStyle(
-              color: Colors.grey, fontWeight: FontWeight.bold)),
+          style:
+              const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
     );
   }
 
   Widget _buildActionButton(BuildContext context,
       {required String label,
-        required Color color,
-        IconData? icon,
-        required VoidCallback onPressed}) {
+      required Color color,
+      IconData? icon,
+      required VoidCallback onPressed}) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         backgroundColor: color,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      icon: icon != null ? Icon(icon, color: Colors.white) : const SizedBox.shrink(),
+      icon: icon != null
+          ? Icon(icon, color: Colors.white)
+          : const SizedBox.shrink(),
       label: Text(label, style: const TextStyle(color: Colors.white)),
       onPressed: () {
         context.read<AdDescriptionBloc>().add(SubmitJobRequest(widget.ad.id));
