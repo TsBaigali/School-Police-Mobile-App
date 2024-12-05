@@ -41,3 +41,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Sensitive Files
+assets/school-police-c59de-firebase-adminsdk-45dsj-47f2bb275d.json
