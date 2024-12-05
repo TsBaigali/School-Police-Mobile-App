@@ -3,15 +3,23 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationService {
   final String serviceAccountPath =
       'assets/school-police-c59de-firebase-adminsdk-45dsj-47f2bb275d.json';
 
   /// Sends a notification to the ad owner and stores the request in Firestore
-  Future<void> sendNotificationToAdOwner(
-      String ownerId, String adDocId, String workerId) async {
+  Future<void> sendNotificationToAdOwner(String ownerId, String adDocId) async {
     try {
+      // Get the current user's ID as workerId
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print('Error: No logged-in user found');
+        return;
+      }
+      final workerId = currentUser.uid;
+
       // Load and decode the service account JSON
       final serviceAccountData =
           await rootBundle.loadString(serviceAccountPath);
