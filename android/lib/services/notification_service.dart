@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:googleapis_auth/auth_io.dart';
 
@@ -9,36 +8,23 @@ class NotificationService {
 
   Future<void> sendNotificationToAdOwner(String ownerId, String adDocId) async {
     try {
-      // Load the service account file from assets
+      // Load and decode the service account JSON
       final serviceAccountData = await rootBundle.loadString(serviceAccountPath);
-      print('Service account loaded: $serviceAccountData');
       final credentials = json.decode(serviceAccountData);
 
-      // Fetch owner's FCM token from Firestore
-      final userDoc = await FirebaseFirestore.instance
-          .collection('user')
-          .doc(ownerId)
-          .get();
+      // Fetch user and ad data from Firestore
+      final userDoc = await FirebaseFirestore.instance.collection('user').doc(ownerId).get();
+      final adDoc = await FirebaseFirestore.instance.collection('ad').doc(adDocId).get();
 
       final fcmToken = userDoc.data()?['fcmToken'];
-      if (fcmToken == null) {
-        print('Owner does not have an FCM token');
-        return;
-      }
-
-      // Fetch ad details from Firestore
-      final adDoc = await FirebaseFirestore.instance
-          .collection('ad')
-          .doc(adDocId)
-          .get();
-
       final adData = adDoc.data();
-      if (adData == null) {
-        print('Ad does not exist');
+
+      if (fcmToken == null || adData == null) {
+        print('Missing data: FCM Token or Ad details not found');
         return;
       }
 
-      // Prepare notification payload
+      // Build notification payload without the `data` section
       final notificationData = {
         'message': {
           'token': fcmToken,
@@ -46,21 +32,15 @@ class NotificationService {
             'title': 'Шинэ хүсэлт',
             'body': 'Таны зар дээр шинэ хүсэлт ирлээ!',
           },
-          'data': {
-            'adId': adDocId,
-            'additionalInfo': adData['additionalInfo'],
-            'action': 'new_request',
-          },
         },
       };
 
-      // Authenticate with Firebase using the service account JSON
+      // Authenticate and send notification
       final authClient = await clientViaServiceAccount(
         ServiceAccountCredentials.fromJson(credentials),
         ['https://www.googleapis.com/auth/firebase.messaging'],
       );
 
-      // Send the notification via FCM HTTP v1 API
       final response = await authClient.post(
         Uri.parse(
           'https://fcm.googleapis.com/v1/projects/${credentials["project_id"]}/messages:send',
@@ -75,10 +55,11 @@ class NotificationService {
         print('Failed to send notification: ${response.body}');
       }
     } catch (e) {
-      print('Error sending notification: $e');
+      print('Error in sending notification: $e');
     }
   }
 }
+
 
 /*import 'dart:convert';
 import 'package:http/http.dart' as http;
