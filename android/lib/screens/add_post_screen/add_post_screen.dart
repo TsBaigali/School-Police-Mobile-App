@@ -7,20 +7,17 @@ import '../home_screen/home_bloc.dart';
 import '../home_screen/home_event.dart';
 import '../../models/ad.dart';
 
-
 class AddPostScreen extends StatefulWidget {
   @override
   _AddPostScreenState createState() => _AddPostScreenState();
 }
 
 class _AddPostScreenState extends State<AddPostScreen> {
-  final TextEditingController _schoolController = TextEditingController();
   final TextEditingController _salaryController = TextEditingController();
   final TextEditingController _additionalInfoController = TextEditingController();
 
   @override
   void dispose() {
-    _schoolController.dispose();
     _salaryController.dispose();
     _additionalInfoController.dispose();
     super.dispose();
@@ -73,8 +70,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTextField(_schoolController, 'Сургууль', 'Сургуулийн нэр оруулна уу.', context),
-                    _buildDropdownField(context, state),
+                    _buildDropdownField(context, state), // District field
+                    _buildSchoolDropdownField(context, state), // School field
                     _buildShiftToggle(context, state),
                     _buildTextField(_salaryController, 'Цалин', 'Цалин оруулна уу.', context),
                     _buildExpandableTextField(
@@ -125,6 +122,25 @@ class _AddPostScreenState extends State<AddPostScreen> {
         onChanged: (value) {
           if (value != null) {
             BlocProvider.of<AddPostBloc>(context).add(DistrictChanged(value));
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildSchoolDropdownField(BuildContext context, AddPostState state) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: DropdownButtonFormField<String>(
+        value: state.selectedSchool, // Bind to the current selected school in the state
+        hint: Text('Сургууль сонгох'), // Placeholder text
+        items: state.availableSchools.map((school) => DropdownMenuItem(
+          value: school,
+          child: Text(school), // Display school name
+        )).toList(),
+        onChanged: (value) {
+          if (value != null) {
+            BlocProvider.of<AddPostBloc>(context).add(SchoolChanged(value)); // Trigger the SchoolChanged event
           }
         },
       ),
@@ -188,7 +204,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         onPressed: () {
           BlocProvider.of<AddPostBloc>(context).add(
             SubmitPostEvent(
-              school: _schoolController.text,
+              school: BlocProvider.of<AddPostBloc>(context).state.selectedSchool ?? '',
               district: BlocProvider.of<AddPostBloc>(context).state.selectedDistrict ?? '',
               shift: BlocProvider.of<AddPostBloc>(context).state.selectedShift ?? '',
               salary: _salaryController.text,
