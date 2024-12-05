@@ -13,7 +13,7 @@ class AddPostBloc extends Bloc<AddPostEvent, AddPostState> {
   // Predefined list of schools with names and positions
   final List<School> _schools = [
     // Баянгол
-    School(name: '20 дугаар сургууль', latitude: 47.92123, longitude: 106.9054),
+    School(name: '20 дугаар сургууль', latitude: 47.9132824175524, longitude: 106.8816681590401),
     School(name: '47 дугаар сургууль', latitude: 47.91834, longitude: 106.9071),
     School(name: '73 дугаар сургууль', latitude: 47.92056, longitude: 106.9092),
     School(name: '93 дугаар сургууль', latitude: 47.92345, longitude: 106.9108),

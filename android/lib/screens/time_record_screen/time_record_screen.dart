@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'time_record_bloc.dart';
 import 'time_record_event.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TimeRecordScreen extends StatefulWidget {
   final String adId;
@@ -25,13 +25,34 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
   String _totalWorkedTimeText = "00:00";
   late DateTime _arrivalTime;
   late DateTime _departureTime;
-  LatLng _adLocation = LatLng(47.90466852584394, 106.93507607116426);
+  LatLng _adLocation = LatLng(47.90466852584394, 106.93507607116426); // Default location
   LatLng? _userLocation;
 
   @override
   void initState() {
     super.initState();
     _listenToLocationChanges();
+    _fetchAdLocation(); // Fetch the ad location when the screen is initialized
+  }
+
+  void _fetchAdLocation() async {
+    // Fetch the ad data from Firestore using the adId
+    try {
+      final adDoc = await FirebaseFirestore.instance.collection('ads').doc(widget.adId).get();
+      if (adDoc.exists) {
+        final data = adDoc.data();
+        // Get the latitude and longitude from the Firestore document
+        final lat = data?['latitude'];
+        final lon = data?['longitude'];
+        if (lat != null && lon != null) {
+          setState(() {
+            _adLocation = LatLng(lat, lon); // Update the adLocation with fetched coordinates
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching ad location: $e");
+    }
   }
 
   void _listenToLocationChanges() async {
@@ -46,7 +67,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
     if (_isArrived || _userLocation == null) return;
     final Distance distance = Distance();
     double distanceInMeters =
-        distance.as(LengthUnit.Meter, _userLocation!, _adLocation);
+    distance.as(LengthUnit.Meter, _userLocation!, _adLocation);
 
     if (distanceInMeters <= 700) {
       setState(() {
@@ -58,8 +79,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
       BlocProvider.of<TimeRecordBloc>(context).add(ArriveEvent());
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text("You are not within 700 meters of the location.")),
+        SnackBar(content: Text("You are not within 700 meters of the location.")),
       );
     }
   }
@@ -68,7 +88,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
     if (!_isArrived || _isDeparted) return;
     final Distance distance = Distance();
     double distanceInMeters =
-        distance.as(LengthUnit.Meter, _userLocation!, _adLocation);
+    distance.as(LengthUnit.Meter, _userLocation!, _adLocation);
 
     if (distanceInMeters <= 700) {
       setState(() {
@@ -78,14 +98,13 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
 
         final workedDuration = _departureTime.difference(_arrivalTime);
         _totalWorkedTimeText =
-            "${workedDuration.inHours}ц ${workedDuration.inMinutes.remainder(60)}мин";
+        "${workedDuration.inHours}ц ${workedDuration.inMinutes.remainder(60)}мин";
       });
 
       BlocProvider.of<TimeRecordBloc>(context).add(DepartEvent());
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text("You are not within 700 meters of the location.")),
+        SnackBar(content: Text("You are not within 700 meters of the location.")),
       );
     }
   }
@@ -140,7 +159,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
@@ -160,7 +179,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
                         children: [
                           TileLayer(
                             urlTemplate:
-                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                             subdomains: ['a', 'b', 'c'],
                           ),
                           CircleLayer(
@@ -239,7 +258,7 @@ class _TimeRecordScreenState extends State<TimeRecordScreen> {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  Theme.of(context).colorScheme.tertiary,
+                              Theme.of(context).colorScheme.tertiary,
                               minimumSize: Size(150, 50),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
