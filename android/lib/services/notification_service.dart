@@ -32,6 +32,12 @@ class NotificationService {
             'title': 'Шинэ хүсэлт',
             'body': 'Таны зар дээр шинэ хүсэлт ирлээ!',
           },
+          'data': {
+            'adId': adDocId,
+            'additionalInfo': adData['additionalInfo'],
+            'price': adData['price'].toString(),
+            'action': 'new_request',
+          },
         },
       };
 
