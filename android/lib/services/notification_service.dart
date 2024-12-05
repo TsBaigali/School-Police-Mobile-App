@@ -1,20 +1,37 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationService {
-  final String serviceAccountPath = 'assets/school-police-c59de-firebase-adminsdk-45dsj-47f2bb275d.json';
+  final String serviceAccountPath =
+      'assets/school-police-c59de-firebase-adminsdk-45dsj-47f2bb275d.json';
 
+  /// Sends a notification to the ad owner and stores the request in Firestore
   Future<void> sendNotificationToAdOwner(String ownerId, String adDocId) async {
     try {
+      // Get the current user's ID as workerId
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print('Error: No logged-in user found');
+        return;
+      }
+      final workerId = currentUser.uid;
+
       // Load and decode the service account JSON
-      final serviceAccountData = await rootBundle.loadString(serviceAccountPath);
+      final serviceAccountData =
+      await rootBundle.loadString(serviceAccountPath);
       final credentials = json.decode(serviceAccountData);
 
-      // Fetch user and ad data from Firestore
-      final userDoc = await FirebaseFirestore.instance.collection('user').doc(ownerId).get();
-      final adDoc = await FirebaseFirestore.instance.collection('ad').doc(adDocId).get();
+      // Fetch user (ad owner) and ad data from Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('user')
+          .doc(ownerId)
+          .get();
+      final adDoc =
+      await FirebaseFirestore.instance.collection('ad').doc(adDocId).get();
 
       final fcmToken = userDoc.data()?['fcmToken'];
       final adData = adDoc.data();
@@ -24,7 +41,19 @@ class NotificationService {
         return;
       }
 
-      // Build notification payload without the `data` section
+      // Add a new request to Firestore
+      final requestRef =
+      await FirebaseFirestore.instance.collection('requests').add({
+        'state': 'pending', // Initial state is 'pending'
+        'worker_id': workerId,
+        'ad_id': adDocId,
+        'owner_id': ownerId,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
+      print('Request created with ID: ${requestRef.id}');
+
+      // Build notification payload
       final notificationData = {
         'message': {
           'token': fcmToken,
@@ -34,6 +63,7 @@ class NotificationService {
           },
           'data': {
             'adId': adDocId,
+            'requestId': requestRef.id,
             'additionalInfo': adData['additionalInfo'],
             'price': adData['price'].toString(),
             'action': 'new_request',
@@ -64,57 +94,27 @@ class NotificationService {
       print('Error in sending notification: $e');
     }
   }
-}
 
-
-/*import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-class NotificationService {
-  final String baseUrl = 'http://192.168.69.3/notifications/send'; // Replace with your actual backend URL
-
-  Future<void> sendNotificationToAdOwner(String ownerId, String adId) async {
+  /// Sends the FCM token to the backend
+  Future<void> sendTokenToBackend(String fcmToken) async {
     try {
-      // Fetch owner's FCM token from Firestore
-      final userDoc = await FirebaseFirestore.instance
-          .collection('user')
-          .doc(ownerId)
-          .get();
+      // Replace this URL with your backend endpoint for storing FCM tokens
+      const String backendUrl =
+          'http://192.168.69.3/notifications/register-token';
 
-      final fcmToken = userDoc.data()?['fcmToken'];
-      if (fcmToken == null) {
-        print('Owner does not have an FCM token');
-        return;
-      }
-
-      // Prepare notification payload
-      final notificationData = {
-        'to': fcmToken,
-        'notification': {
-          'title': 'Шинэ хүсэлт',
-          'body': 'Таны зар дээр шинэ хүсэлт ирлээ!',
-        },
-        'data': {
-          'adId': adId,
-          'action': 'new_request',
-        },
-      };
-
-      // Send the notification via your backend
       final response = await http.post(
-        Uri.parse('${baseUrl}send-notification'),
+        Uri.parse(backendUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(notificationData),
+        body: jsonEncode({'fcmToken': fcmToken}),
       );
 
       if (response.statusCode == 200) {
-        print('Notification sent successfully');
+        print('FCM token registered successfully');
       } else {
-        print('Failed to send notification: ${response.body}');
+        print('Failed to register FCM token: ${response.body}');
       }
     } catch (e) {
-      print('Error sending notification: $e');
+      print('Error sending FCM token to backend: $e');
     }
   }
-}*/
+}
