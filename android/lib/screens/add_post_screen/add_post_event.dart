@@ -25,6 +25,15 @@ class ShiftChanged extends AddPostEvent {
   List<Object?> get props => [shift];
 }
 
+class SchoolChanged extends AddPostEvent {
+  final String selectedSchool;
+
+  const SchoolChanged(this.selectedSchool);
+
+  @override
+  List<Object?> get props => [selectedSchool];
+}
+
 class SubmitPostEvent extends AddPostEvent {
   final String school;
   final String district;
