@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/ad.dart';
-import '../../services/aa.dart';
+import '../../services/notification_service.dart';
 import '../ad_description_screen/ad_description_bloc.dart';
 import '../ad_description_screen/ad_description_event.dart';
 import '../ad_description_screen/ad_description_state.dart';
