@@ -155,28 +155,28 @@ class _AddPostScreenState extends State<AddPostScreen> {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                BlocProvider.of<AddPostBloc>(context).add(ShiftChanged('Өглөө'));
+                BlocProvider.of<AddPostBloc>(context).add(ShiftChanged('Өглөө 07:00-13:30'));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: state.selectedShift == 'Өглөө'
+                backgroundColor: state.selectedShift == 'Өглөө 07:00-13:30'
                     ? Theme.of(context).colorScheme.primary
                     : Colors.grey[300],
               ),
-              child: Text('Өглөө'),
+              child: Text('Өглөө 07:00-13:30'),
             ),
           ),
           SizedBox(width: 10),
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                BlocProvider.of<AddPostBloc>(context).add(ShiftChanged('Өдөр'));
+                BlocProvider.of<AddPostBloc>(context).add(ShiftChanged('Өдөр 13:30-19:30'));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: state.selectedShift == 'Өдөр'
+                backgroundColor: state.selectedShift == 'Өдөр 13:30-19:30'
                     ? Theme.of(context).colorScheme.primary
                     : Colors.grey[300],
               ),
-              child: Text('Өдөр'),
+              child: Text('Өдөр 13:30-19:30'),
             ),
           ),
         ],

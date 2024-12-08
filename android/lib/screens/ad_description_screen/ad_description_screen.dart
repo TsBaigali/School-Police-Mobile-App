@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,10 +71,21 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
     try {
       final notificationService = NotificationService();
 
+      // Get the current user's UID as the workerId
+      final workerId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (workerId == null) {
+        // Handle the case where the user is not authenticated
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be logged in to submit a request!')),
+        );
+        return;
+      }
+
       // Call the submitRequest function to add the request and send a notification
       await notificationService.submitRequest(
         widget.ad.id, // Ad's ID
-        FirebaseFirestore.instance.collection('user').doc().id, // Worker ID (current user's UID)
+        workerId, // Correct worker ID (current user's UID)
         widget.phoneNumber, // Worker’s phone number
       );
 
@@ -82,12 +94,13 @@ class _AdDescriptionScreenState extends State<AdDescriptionScreen> {
         const SnackBar(content: Text('Request sent successfully!')),
       );
     } catch (e) {
-      // Handle any errors
+      // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
