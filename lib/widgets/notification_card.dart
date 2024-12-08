@@ -31,6 +31,9 @@ class NotificationCard extends StatelessWidget {
         child: ListTile(
           leading: CircleAvatar(
             backgroundImage: NetworkImage(imageUrl),
+            onBackgroundImageError: (_, __) {
+              // Fallback logic for testing or image load failure
+            },
           ),
           title: Text(
             title,

@@ -1,15 +1,9 @@
-// This is an example unit test.
-//
-// A unit test tests a single function, method, or class. To learn more about
-// writing unit tests, visit
-// https://flutter.dev/docs/cookbook/testing/unit/introduction
-
-import 'package:flutter_test/flutter_test.dart';
+import 'unit/ad_model_test.dart' as ad_model_test;
+import 'unit/notification_model_test.dart' as notification_model_test;
+import 'unit/user_model_test.dart' as user_model_test;
 
 void main() {
-  group('Plus Operator', () {
-    test('should add two numbers together', () {
-      expect(1 + 1, 2);
-    });
-  });
+  ad_model_test.main();
+  notification_model_test.main();
+  user_model_test.main();
 }
