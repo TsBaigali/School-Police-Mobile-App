@@ -29,6 +29,9 @@ dependencies:
   firebase_messaging: ^15.1.4
   firebase_auth: ^5.3.2
   googleapis_auth: ^1.4.1
+  flutter_dotenv: ^5.0.2
+  webview_flutter: ^4.2.1
+  flutter_inappwebview: ^5.7.2
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +45,4 @@ flutter:
     - assets/images/
     - assets/icons/google-maps.png
     - assets/school-police-c59de-firebase-adminsdk-45dsj-47f2bb275d.json
+    - assets/.env

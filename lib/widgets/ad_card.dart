@@ -43,10 +43,16 @@ class AdCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile Picture
+              // Profile Picture with fallback handling
               CircleAvatar(
                 radius: 30,
-                backgroundImage: NetworkImage('https://media.gettyimages.com/id/1437816897/photo/business-woman-manager-or-human-resources-portrait-for-career-success-company-we-are-hiring.jpg?s=612x612&w=gi&k=20&c=LsB3LmCoN69U82LEYU78IC2tNwOMjy7LJlmEj30UOSs='),
+                backgroundImage: NetworkImage(ad.profilePic),
+                onBackgroundImageError: (_, __) {
+                  // Optional: Log the error for debugging
+                },
+                child: ad.profilePic.isEmpty
+                    ? const Icon(Icons.person, size: 30) // Fallback Icon
+                    : null,
               ),
               const SizedBox(width: 12.0),
 
@@ -116,7 +122,8 @@ class AdCard extends StatelessWidget {
                           children: [
                             const Text(
                               'Үнэ / Хөлс',
-                              style: TextStyle(color: Colors.grey, fontSize: 12),
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 12),
                             ),
                             const SizedBox(height: 4.0),
                             Text(
@@ -136,7 +143,8 @@ class AdCard extends StatelessWidget {
                           children: [
                             const Text(
                               'Ээлж',
-                              style: TextStyle(color: Colors.grey, fontSize: 12),
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 12),
                             ),
                             const SizedBox(height: 4.0),
                             Row(

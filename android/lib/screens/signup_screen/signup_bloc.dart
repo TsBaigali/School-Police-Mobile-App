@@ -100,6 +100,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
           'username': state.username,
           'email': state.email,
           'createdAt': DateTime.now().toIso8601String(),
+          'balance': 0,
           'fcmToken': await firebase_auth.FirebaseAuth.instance.currentUser
               ?.getIdToken(), // Optional FCM Token
         });

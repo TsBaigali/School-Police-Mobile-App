@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:school_police/screens/home_screen/home_bloc.dart';
 import 'package:school_police/screens/home_screen/home_event.dart';
 import 'package:school_police/screens/login_screen/login_bloc.dart';
@@ -12,9 +13,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:school_police/screens/ad_description_screen/ad_description_bloc.dart';
 
 Future<void> main() async {
+  await dotenv.load(fileName: "assets/.env"); // Load the .env file
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
   ); // Initialize Firebase
+
 
   final fcmService = FCMService(); // Instantiate the FCM service
 
